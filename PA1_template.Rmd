@@ -46,9 +46,13 @@ For this part of the assignment, we are going to ignore the missing values. To c
 ```{r StepsPerDay,message=FALSE}
 library(dplyr)
 grouped <- group_by(data, date)
-spd  <-  summarise_each(grouped, funs(sum(.,na.rm = T), mean(.,na.rm = T), 
-                                      median(.,na.rm = T)), steps)
-# spd  <-  summarise_each(grouped, funs(sum, mean, median), steps)
+
+# decided to go with the default behaviour of the functions when a NA value 
+# is present.
+# please look at:
+# https://class.coursera.org/repdata-016/forum/thread?thread_id=60#post-252
+spd  <-  summarise_each(grouped, funs(sum, mean, median), steps)
+
 print(str(spd))
 print(summary(spd))
 ```
@@ -195,7 +199,7 @@ h <- ggplot(fakedata, aes(steps, fill = nas)) + geom_histogram(alpha = 0.5,
                                                          position = 'identity')
 plot(h)
 ```
-When using the `sum` function telling it to not take into account missing values, it sets the sum of a day with missing values to zero. So a lot of the missing values contributed to zero values in the histogram. Those values were filled in and now they contribute to other values in the histogram.
+When using the `sum` function telling it to not take into account missing values, it sets the sum of a day with missing values to `NA`. Those values were filled in and now they contribute to other values in the histogram.
 
 ### Report the mean and median number of steps taken per day
 

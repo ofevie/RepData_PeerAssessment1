@@ -66,17 +66,21 @@ For this part of the assignment, we are going to ignore the missing values. To c
 ```r
 library(dplyr)
 grouped <- group_by(data, date)
-spd  <-  summarise_each(grouped, funs(sum(.,na.rm = T), mean(.,na.rm = T), 
-                                      median(.,na.rm = T)), steps)
-# spd  <-  summarise_each(grouped, funs(sum, mean, median), steps)
+
+# decided to go with the default behaviour of the functions when a NA value 
+# is present.
+# please look at:
+# https://class.coursera.org/repdata-016/forum/thread?thread_id=60#post-252
+spd  <-  summarise_each(grouped, funs(sum, mean, median), steps)
+
 print(str(spd))
 ```
 
 ```
 ## Classes 'tbl_df', 'tbl' and 'data.frame':	61 obs. of  4 variables:
 ##  $ date  : Date, format: "2012-10-01" "2012-10-02" ...
-##  $ sum   : num  0 126 11352 12116 13294 ...
-##  $ mean  : num  NaN 0.438 39.417 42.069 46.16 ...
+##  $ sum   : num  NA 126 11352 12116 13294 ...
+##  $ mean  : num  NA 0.438 39.417 42.069 46.16 ...
 ##  $ median: num  NA 0 0 0 0 0 0 NA 0 0 ...
 ##  - attr(*, "drop")= logi TRUE
 ## NULL
@@ -88,13 +92,13 @@ print(summary(spd))
 
 ```
 ##       date                 sum             mean             median 
-##  Min.   :2012-10-01   Min.   :    0   Min.   : 0.1424   Min.   :0  
-##  1st Qu.:2012-10-16   1st Qu.: 6778   1st Qu.:30.6979   1st Qu.:0  
-##  Median :2012-10-31   Median :10395   Median :37.3785   Median :0  
-##  Mean   :2012-10-31   Mean   : 9354   Mean   :37.3826   Mean   :0  
-##  3rd Qu.:2012-11-15   3rd Qu.:12811   3rd Qu.:46.1597   3rd Qu.:0  
+##  Min.   :2012-10-01   Min.   :   41   Min.   : 0.1424   Min.   :0  
+##  1st Qu.:2012-10-16   1st Qu.: 8841   1st Qu.:30.6979   1st Qu.:0  
+##  Median :2012-10-31   Median :10765   Median :37.3785   Median :0  
+##  Mean   :2012-10-31   Mean   :10766   Mean   :37.3826   Mean   :0  
+##  3rd Qu.:2012-11-15   3rd Qu.:13294   3rd Qu.:46.1597   3rd Qu.:0  
 ##  Max.   :2012-11-30   Max.   :21194   Max.   :73.5903   Max.   :0  
-##                                       NA's   :8         NA's   :8
+##                       NA's   :8       NA's   :8         NA's   :8
 ```
 
 ### Histogram of the total number of steps taken each day
@@ -126,17 +130,17 @@ print(spd.table, type = "html")
 ```
 
 <!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Sun Dec 14 19:02:14 2014 -->
+<!-- Sun Dec 14 19:15:37 2014 -->
 <table border=1>
 <tr> <th>  </th> <th> Date </th> <th> sum </th> <th> mean </th> <th> median </th>  </tr>
-  <tr> <td align="right"> 1 </td> <td> 2012-10-01 </td> <td align="right">   0 </td> <td align="right">  </td> <td align="right">  </td> </tr>
+  <tr> <td align="right"> 1 </td> <td> 2012-10-01 </td> <td align="right">  </td> <td align="right">  </td> <td align="right">  </td> </tr>
   <tr> <td align="right"> 2 </td> <td> 2012-10-02 </td> <td align="right"> 126 </td> <td align="right"> 0.44 </td> <td align="right">   0 </td> </tr>
   <tr> <td align="right"> 3 </td> <td> 2012-10-03 </td> <td align="right"> 11352 </td> <td align="right"> 39.42 </td> <td align="right">   0 </td> </tr>
   <tr> <td align="right"> 4 </td> <td> 2012-10-04 </td> <td align="right"> 12116 </td> <td align="right"> 42.07 </td> <td align="right">   0 </td> </tr>
   <tr> <td align="right"> 5 </td> <td> 2012-10-05 </td> <td align="right"> 13294 </td> <td align="right"> 46.16 </td> <td align="right">   0 </td> </tr>
   <tr> <td align="right"> 6 </td> <td> 2012-10-06 </td> <td align="right"> 15420 </td> <td align="right"> 53.54 </td> <td align="right">   0 </td> </tr>
   <tr> <td align="right"> 7 </td> <td> 2012-10-07 </td> <td align="right"> 11015 </td> <td align="right"> 38.25 </td> <td align="right">   0 </td> </tr>
-  <tr> <td align="right"> 8 </td> <td> 2012-10-08 </td> <td align="right">   0 </td> <td align="right">  </td> <td align="right">  </td> </tr>
+  <tr> <td align="right"> 8 </td> <td> 2012-10-08 </td> <td align="right">  </td> <td align="right">  </td> <td align="right">  </td> </tr>
   <tr> <td align="right"> 9 </td> <td> 2012-10-09 </td> <td align="right"> 12811 </td> <td align="right"> 44.48 </td> <td align="right">   0 </td> </tr>
   <tr> <td align="right"> 10 </td> <td> 2012-10-10 </td> <td align="right"> 9900 </td> <td align="right"> 34.38 </td> <td align="right">   0 </td> </tr>
   <tr> <td align="right"> 11 </td> <td> 2012-10-11 </td> <td align="right"> 10304 </td> <td align="right"> 35.78 </td> <td align="right">   0 </td> </tr>
@@ -160,20 +164,20 @@ print(spd.table, type = "html")
   <tr> <td align="right"> 29 </td> <td> 2012-10-29 </td> <td align="right"> 5018 </td> <td align="right"> 17.42 </td> <td align="right">   0 </td> </tr>
   <tr> <td align="right"> 30 </td> <td> 2012-10-30 </td> <td align="right"> 9819 </td> <td align="right"> 34.09 </td> <td align="right">   0 </td> </tr>
   <tr> <td align="right"> 31 </td> <td> 2012-10-31 </td> <td align="right"> 15414 </td> <td align="right"> 53.52 </td> <td align="right">   0 </td> </tr>
-  <tr> <td align="right"> 32 </td> <td> 2012-11-01 </td> <td align="right">   0 </td> <td align="right">  </td> <td align="right">  </td> </tr>
+  <tr> <td align="right"> 32 </td> <td> 2012-11-01 </td> <td align="right">  </td> <td align="right">  </td> <td align="right">  </td> </tr>
   <tr> <td align="right"> 33 </td> <td> 2012-11-02 </td> <td align="right"> 10600 </td> <td align="right"> 36.81 </td> <td align="right">   0 </td> </tr>
   <tr> <td align="right"> 34 </td> <td> 2012-11-03 </td> <td align="right"> 10571 </td> <td align="right"> 36.70 </td> <td align="right">   0 </td> </tr>
-  <tr> <td align="right"> 35 </td> <td> 2012-11-04 </td> <td align="right">   0 </td> <td align="right">  </td> <td align="right">  </td> </tr>
+  <tr> <td align="right"> 35 </td> <td> 2012-11-04 </td> <td align="right">  </td> <td align="right">  </td> <td align="right">  </td> </tr>
   <tr> <td align="right"> 36 </td> <td> 2012-11-05 </td> <td align="right"> 10439 </td> <td align="right"> 36.25 </td> <td align="right">   0 </td> </tr>
   <tr> <td align="right"> 37 </td> <td> 2012-11-06 </td> <td align="right"> 8334 </td> <td align="right"> 28.94 </td> <td align="right">   0 </td> </tr>
   <tr> <td align="right"> 38 </td> <td> 2012-11-07 </td> <td align="right"> 12883 </td> <td align="right"> 44.73 </td> <td align="right">   0 </td> </tr>
   <tr> <td align="right"> 39 </td> <td> 2012-11-08 </td> <td align="right"> 3219 </td> <td align="right"> 11.18 </td> <td align="right">   0 </td> </tr>
-  <tr> <td align="right"> 40 </td> <td> 2012-11-09 </td> <td align="right">   0 </td> <td align="right">  </td> <td align="right">  </td> </tr>
-  <tr> <td align="right"> 41 </td> <td> 2012-11-10 </td> <td align="right">   0 </td> <td align="right">  </td> <td align="right">  </td> </tr>
+  <tr> <td align="right"> 40 </td> <td> 2012-11-09 </td> <td align="right">  </td> <td align="right">  </td> <td align="right">  </td> </tr>
+  <tr> <td align="right"> 41 </td> <td> 2012-11-10 </td> <td align="right">  </td> <td align="right">  </td> <td align="right">  </td> </tr>
   <tr> <td align="right"> 42 </td> <td> 2012-11-11 </td> <td align="right"> 12608 </td> <td align="right"> 43.78 </td> <td align="right">   0 </td> </tr>
   <tr> <td align="right"> 43 </td> <td> 2012-11-12 </td> <td align="right"> 10765 </td> <td align="right"> 37.38 </td> <td align="right">   0 </td> </tr>
   <tr> <td align="right"> 44 </td> <td> 2012-11-13 </td> <td align="right"> 7336 </td> <td align="right"> 25.47 </td> <td align="right">   0 </td> </tr>
-  <tr> <td align="right"> 45 </td> <td> 2012-11-14 </td> <td align="right">   0 </td> <td align="right">  </td> <td align="right">  </td> </tr>
+  <tr> <td align="right"> 45 </td> <td> 2012-11-14 </td> <td align="right">  </td> <td align="right">  </td> <td align="right">  </td> </tr>
   <tr> <td align="right"> 46 </td> <td> 2012-11-15 </td> <td align="right">  41 </td> <td align="right"> 0.14 </td> <td align="right">   0 </td> </tr>
   <tr> <td align="right"> 47 </td> <td> 2012-11-16 </td> <td align="right"> 5441 </td> <td align="right"> 18.89 </td> <td align="right">   0 </td> </tr>
   <tr> <td align="right"> 48 </td> <td> 2012-11-17 </td> <td align="right"> 14339 </td> <td align="right"> 49.79 </td> <td align="right">   0 </td> </tr>
@@ -189,7 +193,7 @@ print(spd.table, type = "html")
   <tr> <td align="right"> 58 </td> <td> 2012-11-27 </td> <td align="right"> 13646 </td> <td align="right"> 47.38 </td> <td align="right">   0 </td> </tr>
   <tr> <td align="right"> 59 </td> <td> 2012-11-28 </td> <td align="right"> 10183 </td> <td align="right"> 35.36 </td> <td align="right">   0 </td> </tr>
   <tr> <td align="right"> 60 </td> <td> 2012-11-29 </td> <td align="right"> 7047 </td> <td align="right"> 24.47 </td> <td align="right">   0 </td> </tr>
-  <tr> <td align="right"> 61 </td> <td> 2012-11-30 </td> <td align="right">   0 </td> <td align="right">  </td> <td align="right">  </td> </tr>
+  <tr> <td align="right"> 61 </td> <td> 2012-11-30 </td> <td align="right">  </td> <td align="right">  </td> <td align="right">  </td> </tr>
    </table>
 
 Also, a plot of the data per day is shown below, together with the mean (in black) and the median (in red) (I could not figure out a nice way to put labels on time). 
@@ -396,7 +400,7 @@ plot(h)
 ```
 
 <img src="PA1_template_files/figure-html/histogramtotalsteps3-1.png" title="" alt="" style="display: block; margin: auto;" />
-When using the `sum` function telling it to not take into account missing values, it sets the sum of a day with missing values to zero. So a lot of the missing values contributed to zero values in the histogram. Those values were filled in and now they contribute to other values in the histogram.
+When using the `sum` function telling it to not take into account missing values, it sets the sum of a day with missing values to `NA`. Those values were filled in and now they contribute to other values in the histogram.
 
 ### Report the mean and median number of steps taken per day
 
@@ -411,7 +415,7 @@ print(spd.table, type = "html")
 ```
 
 <!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Sun Dec 14 19:02:16 2014 -->
+<!-- Sun Dec 14 19:15:39 2014 -->
 <table border=1>
 <tr> <th>  </th> <th> Date </th> <th> sum </th> <th> mean </th> <th> median </th>  </tr>
   <tr> <td align="right"> 1 </td> <td> 2012-10-01 </td> <td align="right"> 10762 </td> <td align="right"> 37.37 </td> <td align="right">  34 </td> </tr>
