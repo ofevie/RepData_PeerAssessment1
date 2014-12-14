@@ -20,6 +20,7 @@ This assignment makes use of data from a personal activity monitoring device. Th
 
 ## Loading and preprocessing the data
 
+I unzipped the file as a first step, but not using R.
 Before loading the data, a few comments: I "previewed" the data in a text editor to 
 see:
 
@@ -45,9 +46,11 @@ For this part of the assignment, we are going to ignore the missing values. To c
 ```{r StepsPerDay,message=FALSE}
 library(dplyr)
 grouped <- group_by(data, date)
-spd  <-  summarise_each(grouped, funs(sum, mean, median), steps)
-
+spd  <-  summarise_each(grouped, funs(sum(.,na.rm = T), mean(.,na.rm = T), 
+                                      median(.,na.rm = T)), steps)
+# spd  <-  summarise_each(grouped, funs(sum, mean, median), steps)
 print(str(spd))
+print(summary(spd))
 ```
 
 ### Histogram of the total number of steps taken each day
@@ -149,6 +152,7 @@ The result can be seen below, comparing the column "steps" with "stepsFilled". (
 
 ```{r}
 print(data[283:294,])
+print(summary(data))
 ```
 
 ### Histogram of the total number of steps taken each day after missing values were imputed
@@ -160,6 +164,7 @@ grouped2 <- group_by(data, date)
 spdf  <-  summarise_each(grouped2, funs(sum, mean, median), stepsFilled)
 
 print(str(spdf))
+print(summary(spdf))
 ```
 
 Same as before, the histogram of the total number of steps:
@@ -169,7 +174,7 @@ hist(spdf$sum, main = "Histogram of the total number of steps taken each day aft
      xlab = "Total number of steps per day")
 ```
 
-Truthfully, I cannot see the difference before and after imputing the missing values. I would like to compare the two histograms and I like the aesthetics of the package "ggplot2". I found this solution on how to use the histograms [here](http://stackoverflow.com/questions/3541713/how-to-plot-two-histograms-together-in-r).
+Truthfully, I see some of the difference before and after imputing the missing values, but I would like to compare the two histograms and I like the aesthetics of the package "ggplot2". I found this solution on how to use the histograms [here](http://stackoverflow.com/questions/3541713/how-to-plot-two-histograms-together-in-r).
 
 ```{r histogramtotalsteps3,fig.align='center', message=FALSE}
 library(ggplot2)
@@ -185,6 +190,7 @@ h <- ggplot(fakedata, aes(steps, fill = nas)) + geom_histogram(alpha = 0.5,
                                                          position = 'identity')
 plot(h)
 ```
+When using the `sum` function telling it to not take into account missing values, it sets the sum of a day with missing values to zero. So a lot of the missing values contributed to zero values in the histogram. Those values were filled in and now they contribute to other values in the histogram.
 
 ### Report the mean and median number of steps taken per day
 
