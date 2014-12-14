@@ -1,25 +1,242 @@
 ---
 title: "Reproducible Research: Peer Assessment 1"
+author: "Ofelia V."
+date: "14 Dec 2014"
 output: 
   html_document:
     keep_md: true
 ---
+===============================================================================  
+First set the general options for the `knitr` package.
 
+```{r setoptions, warning=FALSE}
+library(knitr)
+opts_chunk$set(echo = TRUE)
+opts_chunk$set(results = "markup")
+```
+## Introduction
+
+This assignment makes use of data from a personal activity monitoring device. This device collects data at 5 minute intervals through out the day. The data consists of two months of data from an anonymous individual collected during the months of October and November, 2012 and include the number of steps taken in 5 minute intervals each day.
 
 ## Loading and preprocessing the data
 
+Before loading the data, a few comments: I "previewed" the data in a text editor to 
+see:
+
+- If it had a header. It does.
+- I verified that the file is comma-separated.
+- I saw that the date formatting is the default one. Then I can directly read the date as a variable with formatting "date".
+- I use he information given about the format of the `NA` values.
+
+Then, I just loaded the data (I didn't think the data needed any pre-processing) and I took a look at it using `str` and `summary`.
+
+```{r loadingdata,cache=TRUE}
+data <- read.csv("./activity.csv", header = TRUE, na.strings = "NA",
+                     colClasses = c("numeric", "Date", "numeric"))
+print(str(data))
+print(summary(data))
+```
 
 
 ## What is mean total number of steps taken per day?
 
+For this part of the assignment, we are going to ignore the missing values. To calculate the total (their `sum`), the mean and median number of steps per day, I am going to use the function "summarize\_each" from the package "dplyr". It allows for multiple functions to be applied to the same data.frame/table. I have to "group" the data per day, and this I realize by using the function "group\_by". I do this and take a look at the result.
 
+```{r StepsPerDay,message=FALSE}
+library(dplyr)
+grouped <- group_by(data, date)
+spd  <-  summarise_each(grouped, funs(sum, mean, median), steps)
+
+print(str(spd))
+```
+
+### Histogram of the total number of steps taken each day
+
+I will use the base plotting system for this figure.
+
+```{r histogramtotalsteps,fig.align='center',fig.height=4,fig.width=9}
+hist(spd$sum, main = "Histogram of the total number of steps taken each day", 
+     xlab = "Total number of steps per day")
+```
+
+It is clear this person gets his 10000 steps a day, for most of the days.
+
+### Report of the mean and median number of steps taken per day
+
+To report the mean and median of the steps per day, I will just print a table with the results of the functions `mean` and `median`. To print this table, I will use the "xtable" package.
+
+```{r tablemean,warning=FALSE,results='asis'}
+library(xtable)
+# xtable messes up the dates, so I have to input the data in this awkward way
+spd.table <- xtable(data.frame(Date = as.character(spd$date), sum = spd$sum, 
+                               mean = spd$mean, median = spd$median), 
+                    display = c("d","s", "d", "f", "d"))
+print(spd.table, type = "html")
+```
+
+Also, a plot of the data per day is shown below, together with the mean (in black) and the median (in red) (I could not figure out a nice way to put labels on time). 
+
+```{r stepseachday, fig.align='center', cache=TRUE,fig.width=11,fig.height=10}
+library(lattice)
+sed <- xyplot(steps ~ interval | date, data = grouped, type = "l",
+             layout = c(10,7), panel = function(x,y,...){
+                   panel.xyplot(x, y, ...)
+                   panel.abline(h = median(y), lty = 2, col = "red", lwd = 2)
+                   panel.abline(h = mean(y), lty = 2, col = "black", lwd = 2)
+             })
+print(sed)
+```
 
 ## What is the average daily activity pattern?
 
+To calculate the average daily activity pattern, instead of grouping the data by date, I group it by the "interval" and take the mean. As there are `NA` values present, I must take care they are ignored. As usual, I take a peek of the result using "str".
 
+```{r stepsPerInterval}
+spi <- summarise_each(group_by(data, interval), funs(mean(.,na.rm = T)), steps)
+print(str(spi))
+```
+
+I would like to plot the "interval" variable as a time variable, so I create a little fake variable called "timeday", and use this variable to plot the average number of steps, by the time of the day.
+
+```{r timedayplot, fig.align='center'}
+timeday <- strptime(formatC(spi$interval, width = 4, flag = "0"), 
+                    format = "%H%M")
+plot(timeday,spi$steps, type = "l", main = "Average number of steps taken (averaged across all days)",
+     xlab = "interval/time(hh:mm)", ylab = "Average number of steps")
+intmaxsteps <- spi$interval[which.max(spi$steps)]
+```
+
+**The maximum number of steps is reached at the interval `r intmaxsteps` (8:35 in the morning)**. This person probably goes for a morning run...
 
 ## Imputing missing values
 
+I want to calculate the number of rows that have missing numbers. For this I use the function `complete.cases` that gives a logical `TRUE` when the row is complete and has no `NA` values. I take the opposite of it and add all the values up, therefore all the TRUE values (now the incomplete rows) are added up.
 
+```{r missingvalues}
+missing <- sum(!complete.cases(data))
+```
+
+There are a number of days that have missing values. The total number of rows that have missing values amounts to `r missing`. I will fill those rows up using the *rounded* total data average in the corresponding interval.  
+My method for filling is not very sophisticated and if I had more time, I would refine it.  
+As the `NA` values are concentrated in the "steps" variable, I use this knowledge to calculate a vector that gives the interval where the steps variable is missing.
+
+```{r fillingNAvalues1}
+nas <- is.na(data$steps)
+intnas <- data$interval[nas]
+n <- length(unique(intnas))
+print(n)
+```
+
+As the number of unique missing interval values is not very large (`r n`), I'll set a loop to change the missing values by interval number.
+
+
+```{r fillingNAvalues2}
+# Create a "stepsFilled" variable as a copy of the steps variable
+data$stepsFilled <- data$steps
+for (i in 1:n){
+      # select the interval value
+      intna <- unique(intnas)[i]
+      # select the missing interval values that correspond to the selected interval value above
+      cond1 <- intnas == intna
+      # select the value of the average of steps that corresponds to the selected interval value above
+      cond2 <- spi$interval == intna
+      # replace the missing values with the rounded average value of steps
+      data$stepsFilled[nas][cond1] <- round(spi$steps[cond2])
+}
+```
+
+The result can be seen below, comparing the column "steps" with "stepsFilled". (When there are missing values, it replaces them with the average step values. When there are values present, it does nothing)
+
+```{r}
+print(data[283:294,])
+```
+
+### Histogram of the total number of steps taken each day after missing values were imputed
+
+I need to do exactly the same I did before: group the data by date and then take the sum, average and median, but now with the filled data.
+
+```{r StepsPerDay2}
+grouped2 <- group_by(data, date)
+spdf  <-  summarise_each(grouped2, funs(sum, mean, median), stepsFilled)
+
+print(str(spdf))
+```
+
+Same as before, the histogram of the total number of steps:
+
+```{r histogramtotalsteps2,fig.align='center',fig.height=4,fig.width=9}
+hist(spdf$sum, main = "Histogram of the total number of steps taken each day after missing values were imputed", 
+     xlab = "Total number of steps per day")
+```
+
+Truthfully, I cannot see the difference before and after imputing the missing values. I would like to compare the two histograms and I like the aesthetics of the package "ggplot2". I found this solution on how to use the histograms [here](http://stackoverflow.com/questions/3541713/how-to-plot-two-histograms-together-in-r).
+
+```{r histogramtotalsteps3,fig.align='center', message=FALSE}
+library(ggplot2)
+notfilled <- data.frame(steps = spd$sum)
+filled <- data.frame(steps = spdf$sum)
+
+notfilled$nas <- "not_filled"
+filled$nas  <- "filled"
+
+fakedata <- rbind(filled, notfilled)
+
+h <- ggplot(fakedata, aes(steps, fill = nas)) + geom_histogram(alpha = 0.5, 
+                                                         position = 'identity')
+plot(h)
+```
+
+### Report the mean and median number of steps taken per day
+
+I do exactly the same as before, only with the data that has been filled.
+
+```{r tablemean2,warning=FALSE,results='asis'}
+spd.table <- xtable(data.frame(Date = as.character(spdf$date), sum = spdf$sum, 
+                               mean = spdf$mean, median = spdf$median), 
+                    display = c("d","s", "d", "f", "d"))
+print(spd.table, type = "html")
+```
+
+The most notorious result is how the median is affected. The filled data has a median different from zero. Also, a plot of the data per day is shown below, together with the mean (in black) and the median (in red).
+
+```{r stepseachday2, fig.align='center',fig.width=11,fig.height=10, cache=TRUE}
+library(lattice) # I need to recall lattice all the time because this plot has been cached.
+sed2 <- xyplot(stepsFilled ~ interval | date, data = grouped2, type = "l",
+             layout = c(10,7), panel = function(x,y,...){
+                   panel.xyplot(x, y, ...)
+                   panel.abline(h = median(y), lty = 2, col = "red", lwd = 2)
+                   panel.abline(h = mean(y), lty = 2, col = "black", lwd = 2)
+             })
+print(sed2)
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+To find this out, I will use the function `weekdays()`. I create a new variable called "weekday" that indicates if the day is part of the weekend (Saturday or Sunday) or the weekdays (the rest of the days).
+
+```{r weekdays}
+weekday <- weekdays(data$date)
+cond <- weekday == "Saturday" | weekday == "Sunday"
+dummy <- rep("weekday", length.out = length(data$date))
+dummy[cond] <- "weekend"
+data$weekday <- factor(dummy)
+
+# divide the data by the factor weekday
+
+spw <- summarise_each(group_by(data, weekday, interval), funs(mean), 
+                      stepsFilled)
+```
+
+
+### Panel plot comparing the average number of steps taken per 5-minute interval across weekdays and weekends
+
+The lattice package is ideal to make this plot.
+
+```{r panelplot, fig.align='center'}
+library(lattice)
+print(xyplot(stepsFilled ~ interval | weekday, data = spw, type = "l",
+             layout = c(1,2), xlab = "Interval", ylab = "Number of steps"))
+```
+
+There are clear differences in the activity during the week (this person wakes up early!) and the weekend (the person wakes up a little later). During the week there is a peak of activity in the morning (around 8:35) and the rest of the day is a bit more sedentary. The weekend has not as large peaks of activity but the overall activity seems to increase.
+
