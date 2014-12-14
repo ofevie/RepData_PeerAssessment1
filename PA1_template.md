@@ -126,7 +126,7 @@ print(spd.table, type = "html")
 ```
 
 <!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Sun Dec 14 18:43:05 2014 -->
+<!-- Sun Dec 14 19:02:14 2014 -->
 <table border=1>
 <tr> <th>  </th> <th> Date </th> <th> sum </th> <th> mean </th> <th> median </th>  </tr>
   <tr> <td align="right"> 1 </td> <td> 2012-10-01 </td> <td align="right">   0 </td> <td align="right">  </td> <td align="right">  </td> </tr>
@@ -230,6 +230,11 @@ I would like to plot the "interval" variable as a time variable, so I create a l
 
 
 ```r
+# first "fill in" the interval values with zeroes, when needed:
+# i.e 5 becomes 0005, but 1955 remains unchanged
+# then use the strptime function to transform this into datetime variables
+# this variables contain the date of "today" so they are only good for plotting
+
 timeday <- strptime(formatC(spi$interval, width = 4, flag = "0"), 
                     format = "%H%M")
 plot(timeday,spi$steps, type = "l", main = "Average number of steps taken (averaged across all days)",
@@ -406,7 +411,7 @@ print(spd.table, type = "html")
 ```
 
 <!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Sun Dec 14 18:43:07 2014 -->
+<!-- Sun Dec 14 19:02:16 2014 -->
 <table border=1>
 <tr> <th>  </th> <th> Date </th> <th> sum </th> <th> mean </th> <th> median </th>  </tr>
   <tr> <td align="right"> 1 </td> <td> 2012-10-01 </td> <td align="right"> 10762 </td> <td align="right"> 37.37 </td> <td align="right">  34 </td> </tr>

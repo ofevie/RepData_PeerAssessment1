@@ -102,6 +102,11 @@ print(str(spi))
 I would like to plot the "interval" variable as a time variable, so I create a little fake variable called "timeday", and use this variable to plot the average number of steps, by the time of the day.
 
 ```{r timedayplot, fig.align='center'}
+# first "fill in" the interval values with zeroes, when needed:
+# i.e 5 becomes 0005, but 1955 remains unchanged
+# then use the strptime function to transform this into datetime variables
+# this variables contain the date of "today" so they are only good for plotting
+
 timeday <- strptime(formatC(spi$interval, width = 4, flag = "0"), 
                     format = "%H%M")
 plot(timeday,spi$steps, type = "l", main = "Average number of steps taken (averaged across all days)",

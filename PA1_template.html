@@ -138,7 +138,7 @@ spd.table &lt;- xtable(data.frame(Date = as.character(spd$date), sum = spd$sum,
                     display = c(&quot;d&quot;,&quot;s&quot;, &quot;d&quot;, &quot;f&quot;, &quot;d&quot;))
 print(spd.table, type = &quot;html&quot;)</code></pre>
 <!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Sun Dec 14 18:43:05 2014 -->
+<!-- Sun Dec 14 19:02:14 2014 -->
 <table border="1">
 <tr> <th>  </th> <th> 
 Date
@@ -813,7 +813,12 @@ print(str(spi))</code></pre>
 ##  - attr(*, &quot;drop&quot;)= logi TRUE
 ## NULL</code></pre>
 <p>I would like to plot the “interval” variable as a time variable, so I create a little fake variable called “timeday”, and use this variable to plot the average number of steps, by the time of the day.</p>
-<pre class="r"><code>timeday &lt;- strptime(formatC(spi$interval, width = 4, flag = &quot;0&quot;), 
+<pre class="r"><code># first &quot;fill in&quot; the interval values with zeroes, when needed:
+# i.e 5 becomes 0005, but 1955 remains unchanged
+# then use the strptime function to transform this into datetime variables
+# this variables contain the date of &quot;today&quot; so they are only good for plotting
+
+timeday &lt;- strptime(formatC(spi$interval, width = 4, flag = &quot;0&quot;), 
                     format = &quot;%H%M&quot;)
 plot(timeday,spi$steps, type = &quot;l&quot;, main = &quot;Average number of steps taken (averaged across all days)&quot;,
      xlab = &quot;interval/time(hh:mm)&quot;, ylab = &quot;Average number of steps&quot;)</code></pre>
@@ -917,7 +922,7 @@ plot(h)</code></pre>
                     display = c(&quot;d&quot;,&quot;s&quot;, &quot;d&quot;, &quot;f&quot;, &quot;d&quot;))
 print(spd.table, type = &quot;html&quot;)</code></pre>
 <!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Sun Dec 14 18:43:07 2014 -->
+<!-- Sun Dec 14 19:02:16 2014 -->
 <table border="1">
 <tr> <th>  </th> <th> 
 Date
